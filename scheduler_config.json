@@ -1,0 +1,21 @@
+{
+   "protected_files": [
+      "scheduler_config.json",
+      "Pipfile",
+      "Pipfile.lock",
+      "scheduler.py",
+      "helpers/__init__.py",
+      "helpers/circleci.py",
+      "helpers/utils.py",
+      "package.json",
+      "yarn.lock",
+      "dangerfile.ts",
+      "ci/danger/danger.ts",
+      "ci/danger/commitlint/index.ts",
+      "ci/danger/commitlint/rules.ts",
+      "ci/danger/black/index.ts",
+      "ci/danger/black/config.toml",
+      "ci/danger/mypy/index.ts",
+      "ci/danger/mypy/mypy.ini"
+   ]
+}

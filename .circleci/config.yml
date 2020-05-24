@@ -1,0 +1,120 @@
+# config.yml
+# Copyright (C) 2020 Presidenza del Consiglio dei Ministri.
+# Please refer to the AUTHORS file for more information.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+version: 2.1
+
+commands:
+  setup_pr_tools:
+    description: Configure the pull requests environment.
+    steps:
+      - restore_cache:
+          name: "[pr_setup] Restore Python Cache"
+          keys:
+            - pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+            - pip-packages-v1-{{ .Branch }}-
+            - pip-packages-v1-
+      - run:
+          name: "[pr_setup] Install dependencies"
+          environment:
+            PIPENV_NOSPIN: 1
+            PIPENV_VENV_IN_PROJECT: 1
+          command: |
+            pip install pipenv
+            pipenv install --dev
+      - save_cache:
+          name: "[pr_setup] Save Python Cache"
+          paths:
+            - ~/.cache/pip
+            - .venv
+          key: pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+      - run:
+          name: "[pr_setup] Activate the Python virtual environment"
+          command: echo "source .venv/bin/activate" >> $BASH_ENV
+      - run:
+          name: "[pr_setup] Install danger"
+          command: yarn install --dev
+
+jobs:
+  pr_check:
+    docker:
+      - image: circleci/python:3.7-node
+    resource_class: small
+    steps:
+      - run:
+          name: "[pr_check] Stop job if not running in PR"
+          command: |
+            if [[ -z "${CIRCLE_PULL_REQUEST}" ]]; then
+                circleci-agent step halt
+            fi
+      - checkout:
+          name: "[pr_check] Checkout the code"
+      - setup_pr_tools
+      - run:
+          name: "[pr_check] Run danger"
+          command: |
+            [ -z "${DANGER_GITHUB_API_TOKEN}" ] || yarn danger ci
+
+  scheduler:
+    docker:
+      - image: cimg/python:3.7.7
+    resource_class: small
+    steps:
+      - checkout
+      - restore_cache:
+          name: "[scheduler] Restore Python Cache"
+          keys:
+            - pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+            - pip-packages-v1-{{ .Branch }}-
+            - pip-packages-v1-
+      - run:
+          name: "[scheduler] Install dependencies"
+          environment:
+            PIPENV_NOSPIN: 1
+            PIPENV_VENV_IN_PROJECT: 1
+          command: |
+            pip install pipenv
+            pipenv install
+      - save_cache:
+          name: "[scheduler] Save Python Cache"
+          paths:
+            - ~/.cache/pip
+            - .venv
+          key: pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+      - run:
+          name: "[scheduler] Configure scheduler"
+          command: |
+            mv scheduler_config.json config.json
+      - run:
+          name: "[scheduler] Run scheduler"
+          command: |
+            export REPOSITORY="${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
+            pipenv run python scheduler.py
+
+workflows:
+  version: 2
+  pr_check:
+    jobs:
+      - pr_check:
+          context: danger
+  scheduler:
+    triggers:
+      - schedule:
+          cron: "0,15,30,45 * * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - scheduler:
+          context: scheduler
