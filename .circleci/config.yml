@@ -29,13 +29,10 @@ commands:
           environment:
             PIPENV_NOSPIN: 1
             PIPENV_VENV_IN_PROJECT: 1
-          command: |
-            pip install pipenv
-            pipenv install --dev
+          command: pipenv install --dev
       - save_cache:
           name: "[pr_setup] Save Python Cache"
           paths:
-            - ~/.cache/pip
             - .venv
           key: pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
       - run:
@@ -52,9 +49,9 @@ jobs:
     resource_class: small
     steps:
       - run:
-          name: "[pr_check] Stop job if not running in PR"
+          name: "[pr_check] Stop job if not running in PR or DANGER_GITHUB_API_TOKEN is missing"
           command: |
-            if [[ -z "${CIRCLE_PULL_REQUEST}" ]]; then
+            if [[ -z "${CIRCLE_PULL_REQUEST}" || -z "${DANGER_GITHUB_API_TOKEN}" ]]; then
                 circleci-agent step halt
             fi
       - checkout:
@@ -67,30 +64,14 @@ jobs:
 
   scheduler:
     docker:
-      - image: cimg/python:3.7.7
+      - image: circleci/python:3.7-node
     resource_class: small
     steps:
       - checkout
-      - restore_cache:
-          name: "[scheduler] Restore Python Cache"
-          keys:
-            - pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-            - pip-packages-v1-{{ .Branch }}-
-            - pip-packages-v1-
       - run:
-          name: "[scheduler] Install dependencies"
-          environment:
-            PIPENV_NOSPIN: 1
-            PIPENV_VENV_IN_PROJECT: 1
-          command: |
-            pip install pipenv
-            pipenv install
-      - save_cache:
-          name: "[scheduler] Save Python Cache"
-          paths:
-            - ~/.cache/pip
-            - .venv
-          key: pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          name: "[scheduler] Setup project path"
+          command: echo "export PROJECT_PATH=$(pwd)" >> $BASH_ENV
+      - setup_pr_tools
       - run:
           name: "[scheduler] Configure scheduler"
           command: |

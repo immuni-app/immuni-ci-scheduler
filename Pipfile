@@ -6,8 +6,7 @@ verify_ssl = true
 [packages]
 gitpython = "~=3.1.2"
 importlib-metadata = "~=1.6.0"
-Markdown = "~=2.6.11"
-mdx_bleach = "~=0.1.4"
+markdown-strings = "~=3.3.0"
 pygithub = "~=1.51"
 python-decouple = "~=3.3"
 requests = "~=2.23"

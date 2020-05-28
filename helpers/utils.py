@@ -15,20 +15,19 @@
 """General purpose utilities"""
 
 import hashlib
-import markdown
 import os
 
 from contextlib import contextmanager
-from mdx_bleach.extension import BleachExtension
+from git import Repo
 from typing import Dict, Iterable, Optional, Set
-
-# Configure Markdown sanitizer
-md = markdown.Markdown(extensions=[BleachExtension()])
 
 
 @contextmanager
 def cd(new_dir):
-    """Temporarily change the working directory.
+    """Temporarily change the working directory of the running process.
+    NOTE: as this utility changes the working directory of the process, it is *not* thread safe.
+    Therefore, it must *not* be used within a ThreadPoolExecutor, but only in the main thread of a
+    process or within a ProcessPoolExecutor.
 
     :param new_dir: the directory to enter.
     """
@@ -42,15 +41,15 @@ def cd(new_dir):
 
 def compute_files_hash(directory: str, filenames: Iterable[str]) -> Dict[str, Optional[str]]:
     """Compute the SHA256 hash of the specified filenames within the given directory.
+    This method resolves the absolute path of the file in order to be thread safe.
 
     :param directory: the root directory containing the specified files.
     :param filenames: an iterable of file names to be found inside the specified directory.
     :return: a dictionary mapping each file to its SHA256 hash.
     """
-    with cd(directory):
-        file_hashes = {filename: _compute_file_hash(filename) for filename in filenames}
-
-    return file_hashes
+    return {
+        filename: _compute_file_hash(os.path.join(directory, filename)) for filename in filenames
+    }
 
 
 def get_files_by_hash_map(file_hashes: Dict[str, Optional[str]]) -> Set[str]:
@@ -68,13 +67,18 @@ def get_files_by_hash_map(file_hashes: Dict[str, Optional[str]]) -> Set[str]:
     return files
 
 
-def sanitize_markdown(message: str) -> str:
-    """Sanitize Markdown messages before they're printed on console and sent to GitHub.
+def get_submodule_sha(repo: Repo, submodule_name: str) -> str:
+    """Return the SHA of the submodule with the specified submodule, if the submodule exists.
+    If the submodule does not exist, return an empty string.
 
-    :param message: the message to be sanitized.
-    :return: the sanitized message.
+    :param repo: a Git Repo object pointing to a git repository on the filesystem.
+    :param submodule_name: the name of the submodule whose SHA must be retrieved.
+    :return: the SHA of the specified submodule, or an empty string if the submodule does not exist.
     """
-    return md.convert(message)
+    try:
+        return repo.submodule(submodule_name).hexsha
+    except ValueError:
+        return ""
 
 
 def _compute_file_hash(filename: str) -> Optional[str]:
