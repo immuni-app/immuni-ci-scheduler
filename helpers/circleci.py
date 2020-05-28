@@ -20,7 +20,7 @@ import requests
 from enum import Enum
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import ConnectionError, Timeout
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Set
+from typing import Any, Callable, Dict, Iterable, List, NamedTuple, Optional, Tuple, Set
 
 API_URL = f"https://circleci.com/api"
 
@@ -28,6 +28,11 @@ API_URL = f"https://circleci.com/api"
 class APIVersion(Enum):
     v11 = 1.1
     v20 = 2
+
+
+class FilteredPipelines(NamedTuple):
+    pipelines: List[Dict[str, Any]]
+    found_stopping_pipeline: bool
 
 
 class CircleCI(object):
@@ -117,7 +122,7 @@ class CircleCI(object):
     @staticmethod
     def filter_pipelines(
         pipelines: Iterable[Dict[str, Any]], stopping_pipeline_id: Optional[str] = None
-    ) -> Tuple[List[Dict[str, Any]], bool]:
+    ) -> FilteredPipelines:
         """Filter a list of CircleCI pipelines. If stopping_pipeline_id is specified, only return
         the pipelines that appear before it in the list; otherwise, all pipelines are returned.
 
@@ -138,7 +143,7 @@ class CircleCI(object):
                 break
             filtered_pipelines.append(pipeline)
 
-        return filtered_pipelines, found_stopping_pipeline
+        return FilteredPipelines(filtered_pipelines, found_stopping_pipeline)
 
     def get_job_prs(self, job_number: str) -> Set[int]:
         """Get the set of pull request numbers associated with the specified job.

@@ -21,23 +21,20 @@ commands:
       - restore_cache:
           name: "[pr_setup] Restore Python Cache"
           keys:
-            - pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-            - pip-packages-v1-{{ .Branch }}-
-            - pip-packages-v1-
+            - pip-packages-v2-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+            - pip-packages-v2-{{ .Branch }}-
+            - pip-packages-v2-
       - run:
           name: "[pr_setup] Install dependencies"
           environment:
             PIPENV_NOSPIN: 1
             PIPENV_VENV_IN_PROJECT: 1
-          command: |
-            pip install pipenv
-            pipenv install --dev
+          command: pipenv install --dev
       - save_cache:
           name: "[pr_setup] Save Python Cache"
           paths:
-            - ~/.cache/pip
             - .venv
-          key: pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          key: pip-packages-v2-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
       - run:
           name: "[pr_setup] Activate the Python virtual environment"
           command: echo "source .venv/bin/activate" >> $BASH_ENV
@@ -52,6 +49,12 @@ jobs:
     resource_class: small
     steps:
       - run:
+          name: "[pr_check] Stop job if DANGER_GITHUB_API_TOKEN is missing"
+          command: |
+            if [[ -z "${DANGER_GITHUB_API_TOKEN}" ]]; then
+                circleci-agent step halt
+            fi
+      - run:
           name: "[pr_check] Stop job if not running in PR"
           command: |
             if [[ -z "${CIRCLE_PULL_REQUEST}" ]]; then
@@ -62,35 +65,18 @@ jobs:
       - setup_pr_tools
       - run:
           name: "[pr_check] Run danger"
-          command: |
-            [ -z "${DANGER_GITHUB_API_TOKEN}" ] || yarn danger ci
+          command: yarn danger ci
 
   scheduler:
     docker:
-      - image: cimg/python:3.7.7
+      - image: circleci/python:3.7-node
     resource_class: small
     steps:
       - checkout
-      - restore_cache:
-          name: "[scheduler] Restore Python Cache"
-          keys:
-            - pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-            - pip-packages-v1-{{ .Branch }}-
-            - pip-packages-v1-
       - run:
-          name: "[scheduler] Install dependencies"
-          environment:
-            PIPENV_NOSPIN: 1
-            PIPENV_VENV_IN_PROJECT: 1
-          command: |
-            pip install pipenv
-            pipenv install
-      - save_cache:
-          name: "[scheduler] Save Python Cache"
-          paths:
-            - ~/.cache/pip
-            - .venv
-          key: pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          name: "[scheduler] Setup project path"
+          command: echo "export PROJECT_PATH=$(pwd)" >> $BASH_ENV
+      - setup_pr_tools
       - run:
           name: "[scheduler] Configure scheduler"
           command: |
