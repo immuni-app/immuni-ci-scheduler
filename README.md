@@ -136,10 +136,10 @@ workflows:
 
 In addition, the following runtime environment variables are needed:
 
-- **CIRCLECI\_API\_TOKEN.** This is a personal CircleCI API token allowed to perform API calls to the CircleCI REST API for the repository that must be checked by the scheduler. In Immuni's repos, this is provided by the scheduler CircleCI context.
+- **CIRCLECI\_API\_TOKEN.** This is a personal CircleCI API token allowed to perform API calls to the CircleCI REST API for the repository that must be checked by the scheduler. In Immuni's repos, this is provided by the *scheduler *CircleCI context.
 - **CIRCLE\_WORKFLOW\_ID.** This is the unique identifier of the current execution of the scheduler workflow, and is injected automatically by CircleCI when the scheduler is run. It is used to determine the upper bound of the pipelines to verify. This variable can be left unassigned when running on a local machine, in which case no upper bound is enforced and any pipeline submitted after the execution of a previous scheduler workflow will be verified.
-- **GITHUB\_TOKEN.** This is a GitHub API token with read permissions on the repository that must be checked by the scheduler. In Immuni's repos, this is provided by the scheduler CircleCI context. 
-- **GITHUB\_USERNAME.** This is the name of the GitHub user associated to the aforementioned GitHub API token. In Immuni's repos, this is provided by the scheduler CircleCI context.
+- **GITHUB\_TOKEN.** This is a GitHub API token with read permissions on the repository that must be checked by the scheduler. In Immuni's repos, this is provided by the *scheduler* CircleCI context. 
+- **GITHUB\_USERNAME.** This is the name of the GitHub user associated to the aforementioned GitHub API token. In Immuni's repos, this is provided by the *scheduler* CircleCI context.
 - **PROJECT\_PATH.** This is the main folder of the repository that the scheduler is executed on. It is necessary for the scheduler to know where to find the necessary Node.js modules to run Danger. If unspecified, the scheduler defaults to the current working directory. In Immuni's repos, this is provided by the _Run scheduler_ step of the scheduler job.
 - **REPOSITORY.** This is the repository that must be checked by the scheduler, including the name of the organisation within which said repository is located. In Immuni's repos, this is provided by the _Run scheduler_ step of the scheduler job.
 
