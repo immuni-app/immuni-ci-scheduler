@@ -21,9 +21,9 @@ commands:
       - restore_cache:
           name: "[pr_setup] Restore Python Cache"
           keys:
-            - pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-            - pip-packages-v1-{{ .Branch }}-
-            - pip-packages-v1-
+            - pip-packages-v2-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+            - pip-packages-v2-{{ .Branch }}-
+            - pip-packages-v2-
       - run:
           name: "[pr_setup] Install dependencies"
           environment:
@@ -34,7 +34,7 @@ commands:
           name: "[pr_setup] Save Python Cache"
           paths:
             - .venv
-          key: pip-packages-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          key: pip-packages-v2-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
       - run:
           name: "[pr_setup] Activate the Python virtual environment"
           command: echo "source .venv/bin/activate" >> $BASH_ENV
