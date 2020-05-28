@@ -49,9 +49,15 @@ jobs:
     resource_class: small
     steps:
       - run:
-          name: "[pr_check] Stop job if not running in PR or DANGER_GITHUB_API_TOKEN is missing"
+          name: "[pr_check] Stop job if DANGER_GITHUB_API_TOKEN is missing"
           command: |
-            if [[ -z "${CIRCLE_PULL_REQUEST}" || -z "${DANGER_GITHUB_API_TOKEN}" ]]; then
+            if [[ -z "${DANGER_GITHUB_API_TOKEN}" ]]; then
+                circleci-agent step halt
+            fi
+      - run:
+          name: "[pr_check] Stop job if not running in PR"
+          command: |
+            if [[ -z "${CIRCLE_PULL_REQUEST}" ]]; then
                 circleci-agent step halt
             fi
       - checkout:
@@ -59,8 +65,7 @@ jobs:
       - setup_pr_tools
       - run:
           name: "[pr_check] Run danger"
-          command: |
-            [ -z "${DANGER_GITHUB_API_TOKEN}" ] || yarn danger ci
+          command: yarn danger ci
 
   scheduler:
     docker:
