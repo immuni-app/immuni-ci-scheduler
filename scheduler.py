@@ -57,8 +57,8 @@ class DangerPRExecution:
 # Constants
 MAX_PROCESSES = 4
 MAX_THREADS = 4
-REFERENCE_BRANCH = "master"
-SCHEDULER_BRANCH = "master"
+REFERENCE_BRANCH = config("REFERENCE_BRANCH", "master")
+SCHEDULER_BRANCH = config("SCHEDULER_BRANCH", "master")
 SCHEDULER_CONFIG_FILE = "config.json"
 SCHEDULER_SUBMODULE_NAME = "scheduler"
 SCHEDULER_WORKFLOW = "scheduler"

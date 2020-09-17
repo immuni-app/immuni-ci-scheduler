@@ -51,7 +51,7 @@ This repository is not meant to be used as a standalone. On the contrary, it ass
 - It is used as a [Git](https://git-scm.com/) submodule of Immuni's [iOS](https://github.com/immuni-app/app-ios) and [Android](https://github.com/immuni-app/app-android) application repositories
 - The folder of the repository to check containing the submodule is named *scheduler*
 - The repository to be checked contains a valid *dangerfile.ts* Danger configuration
-- The scheduler is run on CircleCI from the master branch of the repository that must be checked, in a workflow called *scheduler*
+- The scheduler is run on CircleCI from a designated branch (by default master) of the repository that must be checked, in a workflow called *scheduler*
 - The scheduler workflow of the repository to check takes care of installing all the necessary dependencies to run Danger on that repository
 
 However, the scheduler component may be installed and run on your system against your own GitHub repositories with CI services provided by CircleCI. Should you wish to do this, the recommended method requires that [Python 3.7](https://www.python.org/downloads/release/python-370/), [pip](https://pypi.org/project/pip/), and [pipenv](https://pypi.org/project/pipenv/) are installed on your system.
@@ -86,7 +86,7 @@ jobs:
           name: "[scheduler] Setup project path"
           command: echo "export PROJECT_PATH=$(pwd)" >> $BASH_ENV
       # Custom command to install Danger and the tools it runs
-      # It must be specified by each repository 
+      # It must be specified by each repository
       - setup_pr_tools
       - restore_cache:
           name: "[scheduler] Restore Python Cache"
