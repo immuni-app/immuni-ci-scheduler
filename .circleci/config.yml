@@ -86,6 +86,7 @@ jobs:
           command: |
             export REPOSITORY="${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
             pipenv run python scheduler.py
+          no_output_timeout: 30m
 
 workflows:
   version: 2
@@ -96,7 +97,7 @@ workflows:
   scheduler:
     triggers:
       - schedule:
-          cron: "0,15,30,45 * * * *"
+          cron: "0,30 * * * *"
           filters:
             branches:
               only:
