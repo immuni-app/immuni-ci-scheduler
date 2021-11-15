@@ -5,7 +5,7 @@ description = "A scheduler that verifies the quality and safety of PRs of the Im
 authors = []
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 
 gitpython = "~=3.1.2"
 importlib-metadata = "~=1.6.0"
