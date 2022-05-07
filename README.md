@@ -54,16 +54,16 @@ This repository is not meant to be used as a standalone. On the contrary, it ass
 - The scheduler is run on CircleCI from a designated branch (by default master) of the repository that must be checked, in a workflow called *scheduler*
 - The scheduler workflow of the repository to check takes care of installing all the necessary dependencies to run Danger on that repository
 
-However, the scheduler component may be installed and run on your system against your own GitHub repositories with CI services provided by CircleCI. Should you wish to do this, the recommended method requires that [Python 3.7](https://www.python.org/downloads/release/python-370/), [pip](https://pypi.org/project/pip/), and [pipenv](https://pypi.org/project/pipenv/) are installed on your system.
+However, the scheduler component may be installed and run on your system against your own GitHub repositories with CI services provided by CircleCI. Should you wish to do this, the recommended method requires that [Python 3.7](https://www.python.org/downloads/release/python-370/), [pip](https://pypi.org/project/pip/), and [poetry](https://pypi.org/project/poetry/) are installed on your system.
 
 ```sh
 git clone git@github.com:immuni-app/immuni-ci-scheduler.git
 cd immuni-ci-scheduler
 
-# This command will install the environment needed to run the project using pipenv.
+# This command will install the environment needed to run the project using poetry.
 # Note: this step should be done just once
-pipenv install
-pipenv run python scheduler.py
+poetry install
+poetry run python scheduler.py
 ```
 
 To leverage the scheduler logic in Immuni's iOS and Android applications, the following is added to their CircleCI configuration file:
@@ -75,7 +75,7 @@ jobs:
       # The scheduler needs Python, Node.js, and the Danger dependencies
       # These may be present in the boostrap image or installed manually
       # The actual configuration varies for each repository
-      - image: cimg/python:3.7.7-node
+      - image: cimg/python:3.10.3-node
     resource_class: small
     steps:
       - checkout
@@ -88,27 +88,27 @@ jobs:
       # Custom command to install Danger and the tools it runs
       # It must be specified by each repository
       - setup_pr_tools
-      - restore_cache:
-          name: "[scheduler] Restore Python Cache"
-          keys:
-            - pip-packages-v1-{{ .Branch }}-{{ checksum "scheduler/Pipfile.lock" }}
-            - pip-packages-v1-{{ .Branch }}-
-            - pip-packages-v1-
+      - restore_cache:
+          name: "[scheduler] Restore Python Cache"
+          keys:
+            - pip-packages-v1-{{ .Branch }}-{{ checksum "scheduler/poetry.lock" }}
+            - pip-packages-v1-{{ .Branch }}-
+            - pip-packages-v1-
+      - run:
+          name: "[scheduler] Configure poetry"
+          command: |
+            pip3 install poetry
+            poetry config virtualenvs.in-project true
       - run:
           name: "[scheduler] Install dependencies"
           working_directory: scheduler
-          environment:
-            PIPENV_NOSPIN: 1
-            PIPENV_VENV_IN_PROJECT: 1
-          command: |
-            pip install pipenv
-            pipenv install
+          command: poetry install
       - save_cache:
           name: "[scheduler] Save Python Cache"
           paths:
             - ~/.cache/pip
             - scheduler/.venv
-          key: pip-packages-v1-{{ .Branch }}-{{ checksum "scheduler/Pipfile.lock" }}
+          key: pip-packages-v1-{{ .Branch }}-{{ checksum "scheduler/poetry.lock" }}
       - run:
           name: "[scheduler] Configure scheduler"
           command: |
@@ -118,7 +118,7 @@ jobs:
           working_directory: scheduler
           command: |
             export REPOSITORY="${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
-            pipenv run python scheduler.py
+            poetry run python scheduler.py
 
 workflows:
   scheduler:
@@ -174,7 +174,7 @@ Please check the [AUTHORS](AUTHORS) file for extended reference.
 | [Danger](https://github.com/danger/danger-js) | MIT     |
 | [mypy](https://pypi.org/project/mypy/)        | MIT     |
 | [pip](https://pypi.org/project/pip/)          | MIT     |
-| [pipenv](https://pypi.org/project/pipenv/)    | MIT     |
+| [poetry](https://pypi.org/project/poetry/)    | MIT     |
 
 ### Libraries
 
