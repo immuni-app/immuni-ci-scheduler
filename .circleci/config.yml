@@ -21,9 +21,9 @@ commands:
       - restore_cache:
           name: "[pr_setup] Restore Python Cache"
           keys:
-            - pip-packages-v3-{{ .Branch }}-{{ checksum "poetry.lock" }}
-            - pip-packages-v3-{{ .Branch }}-
-            - pip-packages-v3-
+            - pip-packages-v4-{{ .Branch }}-{{ checksum "poetry.lock" }}
+            - pip-packages-v4-{{ .Branch }}-
+            - pip-packages-v4-
       - run:
           name: "[pr_setup] Configure poetry"
           command: poetry config virtualenvs.in-project true
@@ -34,7 +34,7 @@ commands:
           name: "[pr_setup] Save Python Cache"
           paths:
             - .venv
-          key: pip-packages-v3-{{ .Branch }}-{{ checksum "poetry.lock" }}
+          key: pip-packages-v4-{{ .Branch }}-{{ checksum "poetry.lock" }}
       - run:
           name: "[pr_setup] Activate the Python virtual environment"
           command: echo "source .venv/bin/activate" >> $BASH_ENV
