@@ -122,13 +122,11 @@ jobs:
 
 workflows:
   scheduler:
-    triggers:
-      - schedule:
-          cron: "0,15,30,45 * * * *"
-          filters:
-            branches:
-              only:
-                - master
+    # The cron execution and the target branch are specified by the pipeline configuration in the project settings
+    when:
+      and:
+        - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+        - equal: [ "Scheduler", << pipeline.schedule.name >> ]
     jobs:
       - scheduler:
           context: scheduler
