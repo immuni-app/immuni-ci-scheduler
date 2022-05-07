@@ -45,7 +45,7 @@ commands:
 jobs:
   pr_check:
     docker:
-      - image: cimg/python:3.9.7-node
+      - image: cimg/python:3.10.4-node
     resource_class: small
     steps:
       - run:
@@ -91,17 +91,19 @@ jobs:
 workflows:
   version: 2
   pr_check:
+    # The cron execution and the target branch are specified by the pipeline configuration in the project settings
+    when:
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - pr_check:
           context: danger
   scheduler:
-    triggers:
-      - schedule:
-          cron: "0 0,2,4,6,8,10,12,14,16,18,20,22 * * *"
-          filters:
-            branches:
-              only:
-                - master
+    # The cron execution and the target branch are specified by the pipeline configuration in the project settings
+    when:
+      and:
+        - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+        - equal: [ "Scheduler", << pipeline.schedule.name >> ]
     jobs:
       - scheduler:
           context: scheduler

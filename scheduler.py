@@ -206,7 +206,9 @@ def check_and_schedule():
                     if p.should_run_danger:
                         danger_pr_executions.append(
                             DangerPRExecution(
-                                commit=p.commit, pull_request=pull_request, repo_dir=p.repo_dir,
+                                commit=p.commit,
+                                pull_request=pull_request,
+                                repo_dir=p.repo_dir,
                             )
                         )
 
