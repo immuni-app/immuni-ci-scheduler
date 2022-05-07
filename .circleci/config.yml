@@ -45,7 +45,7 @@ commands:
 jobs:
   pr_check:
     docker:
-      - image: cimg/python:3.9.7-node
+      - image: cimg/python:3.10.4-node
     resource_class: small
     steps:
       - run:
