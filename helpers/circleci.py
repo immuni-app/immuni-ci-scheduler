@@ -83,7 +83,7 @@ class CircleCI(object):
             if containing_workflows or not_containing_workflows or successful_only:
                 for pipeline in filtered_pipelines:
                     # Don't retrieve more than `limit` matching pipelines if limit is enforced
-                    if limit is not None and len(retrieved_pipelines) > limit:
+                    if limit is not None and len(retrieved_pipelines) >= limit:
                         found_stopping_pipeline = True
                         break
                     # Verify matching conditions
