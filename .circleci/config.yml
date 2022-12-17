@@ -29,7 +29,7 @@ commands:
           command: poetry config virtualenvs.in-project true
       - run:
           name: "[pr_setup] Install dependencies"
-          command: poetry install
+          command: poetry install --no-ansi
       - save_cache:
           name: "[pr_setup] Save Python Cache"
           paths:
